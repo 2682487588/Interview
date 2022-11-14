@@ -1,0 +1,87 @@
+# HTTP1.0和HTTP1.1
+
+## 以下几点进行对比
+
+- 响应状态码
+- 缓存处理
+- 连接方式
+- Hosts请求头
+- 带宽处理
+
+## 响应状态码
+
+1.0:HTTP/1.0定义了16种状态码
+
+1.1:新增了不少状态码，尤其是错误状态码都新增了24种
+
+## 缓存处理
+
+缓存技术避免用户和服务器的频繁交互，节省了带宽，降低用户接收信息的延迟
+
+###  HTTP/1.0
+
+ 服务器用`Expires`标签标志（时间）响应体，在 `Expires`相应时间内的请求，都会获得该响应体的缓存， 服务器初次返回给客户端的响应体，有一个`Last-Modifield`标签 ， 标记了 **被请求资源在服务端的最后一次修改**， 请求头之中，使用`If-Modified-Since`标签，表示在此次之前，我要请求的资源有没有被修改
+
+- 如果服务器收到了请求头，判断`If-Modified-Since`时间后，资源没有修改，就发送 `304 not modified`响应头，表示"缓存可用，你到浏览器拿"
+- 如果服务器判断`If-Modified-Since`资源被修改，就返回客户端一个`200OK `的响应体
+
+![image-20220429153934772](C:/Users/%E4%B8%BF%E5%89%91%E6%9D%A5%C2%B7/AppData/Roaming/Typora/typora-user-images/image-20220429153934772.png)
+
+###  HTTP/1.1
+
+在HTTP1.0的基础上，增加了灵活性和拓展性。工作原理不变，增加了更多细致的特性
+
+## 连接方式
+
+**HTTP/1.0默认使用短连接**，客户端和服务器进行一次HTTP操作，就建立一次连接，任务结束就中断，比如访问一些网页，每遇到一些资源，就建立一个TCP连接诶
+
+**为了解决HTTP1.0资源浪费的问题，HTTP1.1优化为默认长连接**
+
+场链接的情况下，当一个网页打开完成后，用于传输的HTTP数据的TCP连接不会关闭，客户端再次访问这个服务器，会继续使用这一条已经建立的连接
+
+**HTTP 协议的长连接和短连接，实质上是 TCP 协议的长连接和短连接。**
+
+**实现长连接需要客户端和服务端都支持长连接**
+
+## Host头处理
+
+**域名系统(DNS)允许多个主机名绑定在同一个IP地址上**  但是HTTP/1.0不会考虑这个问题
+
+## 带宽优化
+
+### 范围请求
+
+HTTP1.1引入返回请求(range request)机制，避免服务器带宽的浪费
+
+如果客户端 **下你个请求一个文件的一部分或者继续下载部分但被终止的文件**，HTTP1.1可以在`Range`头部请求数据的一部分，服务器可以忽略 `Raneg`返回若干`Range`响应
+
+### 状态码100
+
+HTTPS1.0的时候新增了状态码 `100` 。 该状态码的使用场景，存在一些较大的文件请求，服务器不想响应这个请求，状态码`100`可以作为指示请求是否会被正常响应
+
+![HTTP1.1continue1](data:image/png;base64,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)
+
+![image-20220429195716458](C:/Users/%E4%B8%BF%E5%89%91%E6%9D%A5%C2%B7/AppData/Roaming/Typora/typora-user-images/image-20220429195716458.png)
+
+###  压缩
+
+HTTP1.0提供压缩的选项不多，不支持压缩细节的选择，也无法区分端到端(end-to-end)压缩 或者是 逐跳 (hop-by - hop) 压缩
+
+HTTP/1.1对内容编码(content-codings)和传输编码(transfer-codings)区分
+
+HTTP1.0包含了`Content-Encoding`头部，HTTP1.1加入`Transfer-Encoding`头部 
+
+# 总结
+
+**1.连接方式**:HTTP1.0为短连接，HTTP1.1为场链接
+
+**2.状态响应码**  HTTP1.1加入大量响应码
+
+**3.缓存处理**：HTTP1.主要用If-Modified-Since,Expires来作为判断标准
+
+HTTP1.1引入了更多的缓存控制策略如Entity Tag ,If-Unmodified-Since
+
+4.**带宽优化及网络连接的使用**: HTTP1.0浪费贷款，1.1用range头域就解决了这个问题
+
+**5.Host头处理**：  HTTP/1.1请求头添加了Host字段
+
